@@ -29,7 +29,7 @@ import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
 
 public class Controller {
 
-	private static TreeMap<String, Integer> ht;
+	private static TreeMap<String, Integer> ht,tm;
 	private static File file;
 	private static PrintWriter pw;
 	/**
@@ -41,6 +41,7 @@ public class Controller {
 		try {
 			
 			ht = new TreeMap<String, Integer>();
+			tm = new TreeMap<String, Integer>();
 			file = new File("trial.txt");
 			pw = new PrintWriter(new BufferedWriter(new FileWriter(file)),true);
 			
@@ -91,13 +92,16 @@ public class Controller {
 	        System.out.println("Elapsed time to crawl: " + elapsedTime/1000/60 + " minutes");
 	        
 	        startTime = System.currentTimeMillis();
-	   
 	        createTreeMapFromFile();
-	        List<String> words = getFirstFiveHundred();
+	        List<String> words = getFirstX("words",500);
+	        List<String> twograms = getFirstX("twograms",20);
 	        stopTime = System.currentTimeMillis();
-	        System.out.println("words : " + words);
+	        
+	        //System.out.println("words : " + words);
+	        //System.out.println("twograms : " + twograms);
 	        elapsedTime = stopTime - startTime;
-	        System.out.println("Elapsed time to create tree map: " + elapsedTime/1000/60 + " minutes");
+	        
+	        System.out.println("Elapsed time to generate two grams: " + elapsedTime/1000/60 + " minutes");
 	        System.out.println("No of unique urls : " + Crawler.getnoOfURLS());
 	        
 		}
@@ -107,19 +111,212 @@ public class Controller {
 		}
 	}
 	
-	
-	static <K,V extends Comparable<? super V>>
-	SortedSet<Map.Entry<K,V>> entriesSortedByValues(Map<K,V> map) {
-	    SortedSet<Map.Entry<K,V>> sortedEntries = new TreeSet<Map.Entry<K,V>>(
-	        new Comparator<Map.Entry<K,V>>() {
-	            @Override public int compare(Map.Entry<K,V> e1, Map.Entry<K,V> e2) {
-	                return e1.getValue().compareTo(e2.getValue());
-	            }
-	        }
-	    );
-	    sortedEntries.addAll(map.entrySet());
-	    return sortedEntries;
+	public static void createTreeMapFromFile()
+	{
+		BufferedReader br = null;
+		try
+		{
+			br = new BufferedReader(new FileReader(new File("trial.txt")));
+			//PrintWriter pw1 = new PrintWriter(new BufferedWriter(new FileWriter(new File("content.txt"))),true);
+			String S= " ";
+			do{
+			
+				S=br.readLine();
+				Matcher m=Pattern.compile("(.*)(\\bcontent:\\b)(.*)").matcher(S);
+				while(m.find())
+				{
+					String S1=m.group(3).toString();
+					//System.out.println("S1 : " + S1);
+					if(!S1.trim().equals(""))
+					{
+						List<String> tokens = tokenizeString(S1);
+						
+						//System.out.println("tokens of S1: " + tokens);
+						List<String> twograms =	computeTwoGrams(tokens);
+						List<String> cleanedTokens = cleanTokens(tokens);
+						//System.out.println("two grams : " + twograms);
+						insertToHashmap(cleanedTokens);
+						//insertToHashmap(tokens);
+						insertToTree2Grams(twograms);
+					}
+				}
+			}while(S.length()!=0);
+			
+			//System.out.println("Here.....");
+			
+		}
+		catch(Exception ex)
+		{
+			ex.getMessage();
+		}
+		finally
+		{
+			try {
+				br.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
+	
+	
+	private static List<String> computeTwoGrams(List<String> words)
+	{
+		int i = 0;
+		List<String> twograms = new ArrayList<String>();
+		//System.out.println("words");
+		while(i < (words.size()-1))
+		{
+			if(!(words.get(i).equals("#")||words.get(i+1).equals("#")))
+			//System.out.print(words.get(i) + ",");
+				twograms.add(words.get(i) + " " + words.get(i+1));
+			i++;
+		}
+		
+		return twograms;
+	}
+	
+	
+	public static List<String> cleanTokens(List<String> tokens)
+	{
+		List<String> hash = new ArrayList<String>();
+		hash.add("#");
+		tokens.removeAll(hash);
+		return tokens;
+	}
+	
+	public static ArrayList<String> tokenizeString(String toTokenize) {
+		try {
+			
+			List <Pattern> patterns = new ArrayList <Pattern> ();
+		    patterns.add (Pattern.compile ("[a-zA-Z]+|#"));
+			// patterns.add (Pattern.compile ("[a-zA-Z]+"));
+		    
+			ArrayList<String> arrayToken = new ArrayList<String>();
+			// Read through file one line at time. Print line # and line
+			
+				for (Pattern p : patterns) 
+	            {
+	                Matcher m = p.matcher(toTokenize);
+	                while (m.find ()){ 
+	                    arrayToken.add(m.group());
+	                }
+	            }
+				
+			return arrayToken;
+		}catch (ArrayIndexOutOfBoundsException e){
+			/* If no file was passed on the command line, this exception is
+	              generated. */
+			System.out.println("Usage: java ReadFile filename\n");          
+			  
+		}
+		// TODO Write body!
+		return null;
+	}
+	
+	public static void fillToTextFile(String title, String url, String content)
+	{
+		
+		pw.println("title:"+title.trim()+"$$"+"url:"+url.trim()+"$$"+"content:"+content.trim() );
+		pw.flush();
+		
+       
+	}
+	
+	public static List<String> getFirstX(String s, int x)
+	{
+
+		List<String> words = null;
+		if(s.toLowerCase().equals("twograms"))
+		{
+			Map<String, Integer> sortedMapDesc = sortByComparator(tm, false);
+			words = printMap(sortedMapDesc,x,s);
+		}
+		else
+		{
+			Map<String, Integer> sortedMapDesc2 = sortByComparator(ht, false);
+			words = printMap(sortedMapDesc2,x,s);
+		}
+		
+		return words;
+	}
+	
+	public static void insertToHashmap(List<String> tokens)
+	{
+		//System.out.println("In insert to Hash map");
+		for(String token : tokens)
+		{
+			if(!token.trim().equals(""))
+			{
+				if(ht.containsKey(token))
+				{
+					ht.put(token, ht.get(token) + 1);
+				}
+				else 
+				{
+						ht.put(token,0);
+				}
+			}
+		}
+	}
+	
+	public static void insertToTree2Grams(List<String> twograms)
+	{
+		//System.out.println("In insert to Hash map");
+		for(String token : twograms)
+		{
+			if(!token.trim().equals(""))
+			{
+				if(tm.containsKey(token))
+				{
+					tm.put(token, tm.get(token) + 1);
+				}
+				else 
+				{
+						tm.put(token,0);
+				}
+			}
+		}
+	}
+	
+	
+	public static List<String> printMap(Map<String, Integer> map,int x,String s)
+    {
+		
+		File f = null;
+		if(s.toLowerCase().equals("twograms"))
+			f = new File("Common2Grams.txt");
+		else
+			f = new File("CommonWords.txt");
+		
+		PrintWriter p = null;
+        try {
+			p = new PrintWriter(new BufferedWriter(new FileWriter(f)),true);
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		int count = 0;
+		List<String> words = new ArrayList<String>();
+        for (Entry<String, Integer> entry : map.entrySet())
+        {
+        	if(count >= x)
+        		break;
+        	words.add(entry.getKey());
+        	p.println(entry.getKey() + "\t" + entry.getValue());
+			p.flush();
+        	count++;
+            //System.out.println("Key : " + entry.getKey() + " Value : "+ entry.getValue());
+        }
+        
+        p.close();
+        return words;
+    }
+	
+	
+	
 	
 	private static Map<String, Integer> sortByComparator(Map<String, Integer> unsortMap, final boolean order)
     {
@@ -153,149 +350,4 @@ public class Controller {
 
         return sortedMap;
     }
-
-	
-	public static void fillToTextFile(String title, String url, String content)
-	{
-		//out.write(title + "$$" + url + "$$" + content + "##");
-		//out.flush();
-		pw.println("title:"+title.trim()+"$$"+"url:"+url.trim()+"$$"+"content:"+content.trim() );
-		pw.flush();
-		//out.close();
-       
-	}
-	
-	public static List<String> printMap(Map<String, Integer> map)
-    {
-		File f = new File("CommonWords.txt");
-		PrintWriter p = null;
-        try {
-			p = new PrintWriter(new BufferedWriter(new FileWriter(f)),true);
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		int count = 0;
-		List<String> words = new ArrayList<String>();
-        for (Entry<String, Integer> entry : map.entrySet())
-        {
-        	if(count >= 500)
-        		break;
-        	words.add(entry.getKey());
-        	p.println(entry.getKey() + "\t" + entry.getValue());
-			p.flush();
-        	count++;
-            //System.out.println("Key : " + entry.getKey() + " Value : "+ entry.getValue());
-        }
-        
-        p.close();
-        return words;
-    }
-	
-	public static void createTreeMapFromFile()
-	{
-		try
-		{
-			BufferedReader br = new BufferedReader(new FileReader(new File("trial.txt")));
-			//PrintWriter pw1 = new PrintWriter(new BufferedWriter(new FileWriter(new File("content.txt"))),true);
-			String S= " ";
-			do{
-			
-				S=br.readLine();
-				Matcher m=Pattern.compile("(.*)(\\bcontent:\\b)(.*)").matcher(S);
-				while(m.find())
-				{
-					String S1=m.group(3).toString();
-					//pw1.print(S1);
-					//System.out.println("S1 : " + S1);
-					if(!S1.trim().equals(""))
-					{
-						List<String> tokens = tokenizeString(S1);
-						//System.out.println("Tokens : " + tokens);
-						insertToHashmap(tokens);
-					}
-					//
-					//
-				}
-			}while(S.length()!=0);
-			
-			//System.out.println("HT : " + ht);
-			
-		}
-		catch(Exception ex)
-		{
-			ex.getMessage();
-		}
-	}
-	
-	
-	public static ArrayList<String> tokenizeString(String toTokenize) {
-		try {
-			
-			List <Pattern> patterns = new ArrayList <Pattern> ();
-		    patterns.add (Pattern.compile ("[a-zA-Z]*"));
-		    
-			ArrayList<String> arrayToken = new ArrayList<String>();
-			// Read through file one line at time. Print line # and line
-			
-				for (Pattern p : patterns) 
-	            {
-	                Matcher m = p.matcher (toTokenize);
-	                while (m.find ()){ 
-	                    arrayToken.add (m.group());
-	                }
-	                //toTokenize= m.replaceFirst(" ");
-	            }
-				
-			return arrayToken;
-		}catch (ArrayIndexOutOfBoundsException e){
-			/* If no file was passed on the command line, this exception is
-	              generated. */
-			System.out.println("Usage: java ReadFile filename\n");          
-			  
-		}
-		// TODO Write body!
-		return null;
-	}
-	
-
-	public static List<String> getFirstFiveHundred()
-	{
-//		Map<String,Integer> map = ht.descendingMap();
-//		Set<String> keys = map.keySet();
-//		Iterator<String> it = keys.iterator();
-		Map<String, Integer> sortedMapDesc = sortByComparator(ht, false);
-		List<String> words = printMap(sortedMapDesc);
-//		int count = 0;
-//		while(it.hasNext() && count < 500)
-//		{
-//			words.add(it.next());count++;
-//		}
-//		return words;
-		/*for (Entry<String, Integer> entry  : entriesSortedByValues(ht)) {
-		    //System.out.println(entry.getKey()+":"+entry.getValue());
-		    words.add(entry.getKey());
-		}*/
-		return words;
-	}
-	
-	public static void insertToHashmap(List<String> tokens)
-	{
-		//System.out.println("In insert to Hash map");
-		for(String token : tokens)
-		{
-			if(!token.trim().equals(""))
-			{
-				if(ht.containsKey(token))
-				{
-					ht.put(token, ht.get(token) + 1);
-				}
-				else 
-				{
-						ht.put(token,0);
-				}
-			}
-		}
-	}
 }

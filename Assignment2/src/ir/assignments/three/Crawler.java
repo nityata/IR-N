@@ -1,12 +1,11 @@
 package ir.assignments.three;
 
-import java.io.BufferedWriter;
+
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
+
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -19,7 +18,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.tartarus.martin.Stemmer;
 
-import com.google.gson.JsonObject;
+
 
 
 
@@ -38,7 +37,6 @@ public class Crawler extends WebCrawler{
             + "|wav|avi|mov|mpeg|ram|m4v|pdf" 
             + "|rm|smil|wmv|swf|wma|zip|rar|gz))$");
 	private final static Pattern subdomain = Pattern.compile(".*(\\.(ics))$");
-	private static File qfive = new File("CommonWords.txt");
 	
 
 	/**
@@ -78,7 +76,6 @@ public class Crawler extends WebCrawler{
 			noOfUniqueUrls++;
 			String url = page.getWebURL().getURL();
 			System.out.println("URL: " + url);
-			//crawl(url);
 			urls.add(url);
 			
 			if (page.getParseData() instanceof HtmlParseData) {
@@ -118,38 +115,25 @@ public class Crawler extends WebCrawler{
 	
 	
 	
+	
+	
 	public static String preprocess(String contentText)
 	{
 		//String swords = fillstopwords();
-		String swords = "\\ba\\b|\\babout\\b|\\babove\\b|\\bafter\\b|\\bagain\\b|\\bagainst\\b|\\ball\\b|\\bam\\b|\\ban\\b|\\band\\b|\\bany\\b|\\bare\\b|\\baren't\\b|\\bas\\b|\\bat\\b|\\bbe\\b|\\bbecause\\b|\\bbeen\\b|\\bbefore\\b|\\bbeing\\b|\\bbelow\\b|\\bbetween\\b|\\bboth\\b|\\bbut\\b|\\bby\\b|\\bcan't\\b|\\bcannot\\b|\\bcould\\b|\\bcouldn't\\b|\\bdid\\b|\\bdidn't\\b|\\bdo\\b|\\bdoes\\b|\\bdoesn't\\b|\\bdoing\\b|\\bdon't\\b|\\bdown\\b|\\bduring\\b|\\beach\\b|\\bfew\\b|\\bfor\\b|\\bfrom\\b|\\bfurther\\b|\\bhad\\b|\\bhadn't\\b|\\bhas\\b|\\bhasn't\\b|\\bhave\\b|\\bhaven't\\b|\\bhaving\\b|\\bhe\\b|\\bhe'd\\b|\\bhe'll\\b|\\bhe's\\b|\\bher\\b|\\bhere\\b|\\bhere's\\b|\\bhers\\b|\\bherself\\b|\\bhim\\b|\\bhimself\\b|\\bhis\\b|\\bhow\\b|\\bhow's\\b|\\bi\\b|\\bi'd\\b|\\bi'll\\b|\\bi'm\\b|\\bi've\\b|\\bif\\b|\\bin\\b|\\binto\\b|\\bis\\b|\\bisn't\\b|\\bit\\b|\\bit's\\b|\\bits\\b|\\bitself\\b|\\blet's\\b|\\bme\\b|\\bmore\\b|\\bmost\\b|\\bmustn't\\b|\\bmy\\b|\\bmyself\\b|\\bno\\b|\\bnor\\b|\\bnot\\b|\\bof\\b|\\boff\\b|\\bon\\b|\\bonce\\b|\\bonly\\b|\\bor\\b|\\bother\\b|\\bought\\b|\\bour\\b|\\bours\\b|\\bourselves\\b|\\bout\\b|\\bover\\b|\\bown\\b|\\bsame\\b|\\bshan't\\b|\\bshe\\b|\\bshe'd\\b|\\bshe'll\\b|\\bshe's\\b|\\bshould\\b|\\bshouldn't\\b|\\bso\\b|\\bsome\\b|\\bsuch\\b|\\bthan\\b|\\bthat\\b|\\bthat's\\b|\\bthe\\b|\\btheir\\b|\\btheirs\\b|\\bthem\\b|\\bthemselves\\b|\\bthen\\b|\\bthere\\b|\\bthere's\\b|\\bthese\\b|\\bthey\\b|\\bthey'd\\b|\\bthey'll\\b|\\bthey're\\b|\\bthey've\\b|\\bthis\\b|\\bthose\\b|\\bthrough\\b|\\bto\\b|\\btoo\\b|\\bunder\\b|\\buntil\\b|\\bup\\b|\\bvery\\b|\\bwas\\b|\\bwasn't\\b|\\bwe\\b|\\bwe'd\\b|\\bwe'll\\b|\\bwe're\\b|\\bwe've\\b|\\bwere\\b|\\bweren't\\b|\\bwhat\\b|\\bwhat's\\b|\\bwhen\\b|\\bwhen's\\b|\\bwhere\\b|\\bwhere's\\b|\\bwhich\\b|\\bwhile\\b|\\bwho\\b|\\bwho's\\b|\\bwhom\\b|\\bwhy\\b|\\bwhy's\\b|\\bwith\\b|\\bwon't\\b|\\bwould\\b|\\bwouldn't\\b|\\byou\\b|\\byou'd\\b|\\byou'll\\b|\\byou're\\b|\\byou've\\b|\\byour\\b|\\byours\\b|\\byourself\\b|\\byourselves\\b|";
-		//System.out.println(swords);
-        //String stopwordsRemoved = removestopwords(contentText,swords);
-		String stopwordsRemoved = contentText.toLowerCase().replaceAll(swords, "");
+		String swords = "\\ba\\b|\\babout\\b|\\babove\\b|\\bafter\\b|\\bagain\\b|\\bagainst\\b|\\ball\\b|\\bam\\b|\\ban\\b|\\band\\b|\\bany\\b|\\bare\\b|\\baren't\\b|\\bas\\b|\\bat\\b|\\bbe\\b|\\bbecause\\b|\\bbeen\\b|\\bbefore\\b|\\bbeing\\b|\\bbelow\\b|\\bbetween\\b|\\bboth\\b|\\bbut\\b|\\bby\\b|\\bcan't\\b|\\bcannot\\b|\\bcould\\b|\\bcouldn't\\b|\\bdid\\b|\\bdidn't\\b|\\bdo\\b|\\bdoes\\b|\\bdoesn't\\b|\\bdoing\\b|\\bdon't\\b|\\bdown\\b|\\bduring\\b|\\beach\\b|\\bfew\\b|\\bfor\\b|\\bfrom\\b|\\bfurther\\b|\\bhad\\b|\\bhadn't\\b|\\bhas\\b|\\bhasn't\\b|\\bhave\\b|\\bhaven't\\b|\\bhaving\\b|\\bhe\\b|\\bhe'd\\b|\\bhe'll\\b|\\bhe's\\b|\\bher\\b|\\bhere\\b|\\bhere's\\b|\\bhers\\b|\\bherself\\b|\\bhim\\b|\\bhimself\\b|\\bhis\\b|\\bhow\\b|\\bhow's\\b|\\bi\\b|\\bi'd\\b|\\bi'll\\b|\\bi'm\\b|\\bi've\\b|\\bif\\b|\\bin\\b|\\binto\\b|\\bis\\b|\\bisn't\\b|\\bit\\b|\\bit's\\b|\\bits\\b|\\bitself\\b|\\blet's\\b|\\bme\\b|\\bmore\\b|\\bmost\\b|\\bmustn't\\b|\\bmy\\b|\\bmyself\\b|\\bno\\b|\\bnor\\b|\\bnot\\b|\\bof\\b|\\boff\\b|\\bon\\b|\\bonce\\b|\\bonly\\b|\\bor\\b|\\bother\\b|\\bought\\b|\\bour\\b|\\bours\\b|\\bourselves\\b|\\bout\\b|\\bover\\b|\\bown\\b|\\bsame\\b|\\bshan't\\b|\\bshe\\b|\\bshe'd\\b|\\bshe'll\\b|\\bshe's\\b|\\bshould\\b|\\bshouldn't\\b|\\bso\\b|\\bsome\\b|\\bsuch\\b|\\bthan\\b|\\bthat\\b|\\bthat's\\b|\\bthe\\b|\\btheir\\b|\\btheirs\\b|\\bthem\\b|\\bthemselves\\b|\\bthen\\b|\\bthere\\b|\\bthere's\\b|\\bthese\\b|\\bthey\\b|\\bthey'd\\b|\\bthey'll\\b|\\bthey're\\b|\\bthey've\\b|\\bthis\\b|\\bthose\\b|\\bthrough\\b|\\bto\\b|\\btoo\\b|\\bunder\\b|\\buntil\\b|\\bup\\b|\\bvery\\b|\\bwas\\b|\\bwasn't\\b|\\bwe\\b|\\bwe'd\\b|\\bwe'll\\b|\\bwe're\\b|\\bwe've\\b|\\bwere\\b|\\bweren't\\b|\\bwhat\\b|\\bwhat's\\b|\\bwhen\\b|\\bwhen's\\b|\\bwhere\\b|\\bwhere's\\b|\\bwhich\\b|\\bwhile\\b|\\bwho\\b|\\bwho's\\b|\\bwhom\\b|\\bwhy\\b|\\bwhy's\\b|\\bwith\\b|\\bwon't\\b|\\bwould\\b|\\bwouldn't\\b|\\byou\\b|\\byou'd\\b|\\byou'll\\b|\\byou're\\b|\\byou've\\b|\\byour\\b|\\byours\\b|\\byourself\\b|\\byourselves\\b";
+		String stopwordsRemoved = contentText.toLowerCase().replaceAll(swords, " # ");
+		//String stopwordsRemoved = contentText.toLowerCase().replaceAll(swords, "");
 		String[] sw = stopwordsRemoved.split(" ");
 		String stemmed = "";
 		for(int i = 0; i < sw.length ; i++)
 		{
-			stemmed += " " + stem(sw[i]);
+				stemmed += " " + stem(sw[i]);
 		}
-		
-        //String stemmed = stem(stopwordsRemoved);
-		
         //System.out.println("Stemmed Content : " + stemmed);
         return stemmed;
 	}
 	
-	/*public static String removestopwords(String contentText)
-	{
-		for(String sw : stopwords)
-		{
-			contentText.replaceAll(sw, "");
-		}
-		return contentText; 
-	}
-	*/
-	
-	
-	// get a better stemmer maybe ?
+
 	public static String stem(String contentToStem)
 	{
 		Stemmer stemmer = new Stemmer();
